@@ -16,6 +16,24 @@ def main():
     Return Value: None
     Author: Jaden
     '''
+
+    assert 6 <= len(test_board) <= 8
+    assert all(2 <= square <= 29 for square in test_board)
+    assert all(value in ["boost", "trap", "question"]
+               for value in test_board.values())
+
+    # Test move_player()
+    assert move_player(1, 2) == 3
+    assert move_player(28, 4) == 28
+    assert move_player(2, -3) == 1
+
+    # Test check_special_square()
+    assert check_special_square(5, {5: "boost"}) == "boost"
+    assert check_special_square(10, {}) == "normal"
+
+    # Test check_win()
+    assert check_win(30) == True
+    assert check_win(20) == False
     
     play_game()
 

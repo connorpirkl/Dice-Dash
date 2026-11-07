@@ -1,6 +1,5 @@
 Dice Dash
 
-Description
 
 Dice Dash is a simple dice-based board game written in Python. The player starts at the beginning of the board and tries to reach the finish line by rolling a die and moving forward.
 
@@ -50,6 +49,4 @@ Run the main Python file.
 
 Follow the instructions displayed in the console.
 
-Author
 
-Created as a Python programming project.

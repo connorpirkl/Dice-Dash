@@ -17,6 +17,19 @@ def main():
     Author: Jaden
     '''
 
+   def main():
+
+    '''
+    Function: main()
+    Purpose: Starts the Dice Dash game.
+    Parameters: None
+    Return Value: None
+    Author: Jaden
+    '''
+
+    # Test setup_board()
+    test_board = setup_board()
+    assert isinstance(test_board, dict)
     assert 6 <= len(test_board) <= 8
     assert all(2 <= square <= 29 for square in test_board)
     assert all(value in ["boost", "trap", "question"]
@@ -34,8 +47,11 @@ def main():
     # Test check_win()
     assert check_win(30) == True
     assert check_win(20) == False
-    
+
+    print("All tests passed!")
+
     play_game()
+
 
 
 

@@ -154,8 +154,22 @@ def setup_board():
     Purpose: Randomly creates 6 to 8 special squares.
     Parameters: None
     Return Value: Dictionary of special squares
-    Author: Kevin
+    Author: Connor
     '''
+
+    special_squares = {}
+
+    special_count = random.randint(6, 8)
+
+    square_list = random.sample(range(2, 30), special_count)
+
+    for square in square_list:
+
+        special_type = random.choice(["boost", "trap", "question"])
+
+        special_squares[square] = special_type
+
+    return special_squares
 
 
 
@@ -211,8 +225,14 @@ def roll_dice():
     Purpose: Rolls a six-sided die.
     Parameters: None
     Return Value: Dice result
-    Author: Kevin
+    Author: Connor
     '''
+
+    dice_result = random.randint(1, 6)
+
+    print("\nYou rolled a", dice_result)
+
+    return dice_result
 
 
 
@@ -223,8 +243,23 @@ def move_player(current_position, movement_amount):
     Purpose: Moves the player and handles board boundaries.
     Parameters: Current position, movement amount
     Return Value: New position
-    Author: Kevin
+    Author: Connor
     '''
+
+    new_position = current_position + movement_amount
+
+    # Bounce backward if the player passes square 30
+    if new_position > 30:
+
+        extra_spaces = new_position - 30
+
+        new_position = 30 - extra_spaces
+
+    # Prevent the player from going below square 1
+    if new_position < 1:
+        new_position = 1
+
+    return new_position
 
 
 
@@ -302,7 +337,11 @@ def check_win(player_position):
     Return Value: True or False
     Author: Jaden
     '''
+    if player_position == 30:
+        return True
 
+    else:
+        return False
 
 
 def display_result(game_result, final_score):
@@ -314,7 +353,21 @@ def display_result(game_result, final_score):
     Return Value: None
     Author: Jaden
     '''
+    
+    print("\n========== GAME OVER ==========")
 
+    if game_result == "win":
+        print("Congratulations! You won Dice Dash!")
+
+    elif game_result == "loss":
+        print("You ran out of turns. Better luck next time!")
+
+    elif game_result == "quit":
+        print("You chose to quit the game.")
+
+    print("Your final score is:", final_score)
+
+    print("================================")
 
 
 
@@ -325,8 +378,20 @@ def play_again():
     Purpose: Asks the player if they want another game.
     Parameters: None
     Return Value: True or False
-    Author: Kevin
+    Author: Connor
     '''
+
+    choice = input("\nWould you like to play again? (y/n): ")
+
+    while choice.lower() not in ["y", "n"]:
+        print("Invalid input.")
+        choice = input("Enter y or n: ")
+
+    if choice.lower() == "y":
+        return True
+
+    else:
+        return False
 
 
 

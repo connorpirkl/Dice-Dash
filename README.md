@@ -1,11 +1,11 @@
-Dice Dash
+# Dice Dash
 
 
 Dice Dash is a simple dice-based board game written in Python. The player starts at the beginning of the board and tries to reach the finish line by rolling a die and moving forward.
 
 The player has a limited number of turns to reach the end of the board. Each turn, the player can choose to roll the die or quit the game.
 
-Features
+## Features
 
 Roll a virtual die.
 
@@ -19,7 +19,7 @@ Win by reaching the end of the board.
 
 Quit the game at any time.
 
-How to Play
+## How to Play
 
 Run the Python program.
 
@@ -33,13 +33,13 @@ Continue rolling until you reach the finish line or run out of turns.
 
 Press n if you want to quit the game.
 
-Requirements
+## Requirements
 
 Python 3
 
 No additional libraries are required.
 
-How to Run
+## How to Run
 
 Download or clone this repository.
 

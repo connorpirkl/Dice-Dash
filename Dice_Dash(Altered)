@@ -1,0 +1,448 @@
+# Game: Dice Dash
+# Purpose: A single-player dice game where the player tries
+#          to reach square 30 within 15 turns.
+# Author: Dice Dash Group (Connor, Jaden, Kevin)
+
+
+import random
+
+
+def main():
+
+    '''
+    Function: main()
+    Purpose: Starts the Dice Dash game.
+    Parameters: None
+    Return Value: None (NoneType)
+    Author: Jaden
+    '''
+
+    # Test setup_board()
+    test_board = setup_board()
+    assert isinstance(test_board, dict)
+    assert 6 <= len(test_board) <= 8
+    assert all(2 <= square_int <= 29 for square_int in test_board)
+    assert all(value_str in ["boost", "trap", "question"]
+               for value_str in test_board.values())
+
+    # Test move_player()
+    assert move_player(1, 2) == 3
+    assert move_player(28, 4) == 28
+    assert move_player(2, -3) == 1
+
+    # Test check_special_square()
+    assert check_special_square(5, {5: "boost"}) == "boost"
+    assert check_special_square(10, {}) == "normal"
+
+    # Test check_win()
+    assert check_win(30) == True
+    assert check_win(20) == False
+    assert check_win(31) == True
+
+    print("All tests passed!")
+
+    play_game()
+
+
+
+
+def play_game():
+    
+    '''
+    Function: play_game()
+    Purpose: Runs the main game loop and controls the turns,
+             player movement, and game status.
+    Parameters: None
+    Return Value: None (NoneType)
+    Author: Connor
+    '''
+
+    play_str = "y"
+
+    while play_str == "y":
+
+        player_pos_int = 1
+        turns_rem_int = 15
+        game_status = True
+        game_result_str = "loss"
+        final_score_int = 0
+
+        # Set up the board and questions
+        special_squares = setup_board()
+
+        questions_list = [
+            ("What planet is known as the Red Planet?", "mars"),
+            ("How many days are in a week?", "7"),
+            ("What is the largest ocean?", "pacific"),
+            ("How many sides does a triangle have?", "3"),
+            ("What is the capital of France?", "paris"),
+            ("What gas do humans need to breathe?", "oxygen"),
+            ("How many months are in a year?", "12"),
+            ("What is the closest star to Earth?", "sun")
+        ]
+
+        print("\nWelcome to Dice Dash!")
+        print("Your goal is to reach square 30 in 15 turns.")
+
+        # Display the starting board
+        display_board(player_pos_int, special_squares)
+
+        # Main game loop
+        while game_status == True:
+            (player_pos_int, turns_rem_int, game_status,
+             game_result_str, final_score_int) = taketurn(
+                player_pos_int, turns_rem_int, special_squares,
+                questions_list
+            )
+
+        # Display the final result
+        display_result(game_result_str, final_score_int)
+
+        # Ask whether the player wants to play again
+        play_str = "y" if play_again() == True else "n"
+
+    print("\nThanks for playing Dice Dash!")
+
+
+
+def taketurn(player_pos_int, turns_rem_int, special_squares, questions_list):
+
+    '''
+    Function: taketurn()
+    Purpose: Handles one player's turn, including rolling, movement,
+             special squares, and checking the game status.
+    Parameters: player_pos_int (int), turns_rem_int (int),
+                special_squares (dict[int, str]),
+                questions_list (list[tuple[str, str]])
+    Return Value: tuple[int, int, bool, str, int]
+                  (position, turns remaining, game active, result, score)
+    Author: Dice Dash Group
+    '''
+
+    game_status = True
+    game_result_str = "loss"
+    final_score_int = 0
+
+    print("\nYou are at position", player_pos_int)
+    print("Turns remaining:", turns_rem_int)
+
+    play_str = input('Press "y" to roll the die or "n" to quit: ')
+
+    if play_str == "y":
+
+        # Roll the dice
+        dice_roll_int = roll_dice()
+
+        # Move the player
+        player_pos_int = move_player(player_pos_int, dice_roll_int)
+
+        # Check for a special square
+        special_type_str = check_special_square(
+            player_pos_int, special_squares
+        )
+
+        # Handle boost square
+        if special_type_str == "boost":
+            print("You landed on a boost! Move forward 3.")
+            player_pos_int = move_player(player_pos_int, 3)
+
+        # Handle trap square
+        elif special_type_str == "trap":
+            print("You landed on a trap! Move backward 3.")
+            player_pos_int = move_player(player_pos_int, -3)
+
+        # Handle question square
+        elif special_type_str == "question":
+            print("You landed on a question square!")
+
+            movement_int = ask_question(questions_list)
+            player_pos_int = move_player(player_pos_int, movement_int)
+
+        else:
+            print("You landed on a normal square.")
+
+        # Subtract one turn after all movement
+        turns_rem_int = turns_rem_int - 1
+
+        # Display updated position and board
+        print("\nYour new position is", player_pos_int)
+        print("Turns remaining:", turns_rem_int)
+
+        display_board(player_pos_int, special_squares)
+
+        # Check if the player won or lost
+        if check_win(player_pos_int) == True:
+            game_result_str = "win"
+            final_score_int = 100 + (5 * turns_rem_int)
+            game_status = False
+
+        elif turns_rem_int == 0:
+            game_result_str = "loss"
+            final_score_int = player_pos_int * 3
+            game_status = False
+
+    elif play_str == "n":
+        print("\nThanks for playing!")
+        game_result_str = "quit"
+        final_score_int = player_pos_int * 3
+        game_status = False
+
+    else:
+        print("Invalid input. Please enter y or n.")
+
+    return (player_pos_int, turns_rem_int, game_status,
+            game_result_str, final_score_int)
+
+
+
+def setup_board():
+    
+    '''
+    Function: setup_board()
+    Purpose: Randomly creates 6 to 8 special squares.
+    Parameters: None
+    Return Value: dict[int, str] (dictionary mapping square numbers to special types)
+    Author: Connor
+    '''
+
+    special_squares = {}
+
+    special_count_int = random.randint(6, 8)
+
+    square_list_list = random.sample(range(2, 30), special_count_int)
+
+    for square_int in square_list_list:
+
+        special_type_str = random.choice(["boost", "trap", "question"])
+
+        special_squares[square_int] = special_type_str
+
+    return special_squares
+
+
+
+def display_board(player_position_int, special_squares):
+    
+    '''
+    Function: display_board()
+    Purpose: Displays the 30-square board using emojis.
+    Parameters: player_position_int (int), special_squares (dict[int, str])
+    Return Value: None (NoneType)
+    Author: Connor
+    '''
+
+    print("\n========== DICE DASH ==========")
+
+    for square_int in range(1, 31):
+
+        if square_int == player_position_int:
+            marker_str = "🔵"
+
+        elif square_int in special_squares:
+
+            if special_squares[square_int] == "boost":
+                marker_str = "🚀"
+
+            elif special_squares[square_int] == "trap":
+                marker_str = "⚠️"
+
+            elif special_squares[square_int] == "question":
+                marker_str = "❓"
+
+        else:
+            marker_str = "⬜"
+
+        print(f"{square_int:02d}{marker_str}", end="  ")
+
+        if square_int % 10 == 0:
+            print("\n")
+
+    print("================================")
+    print("🔵 = Player")
+    print("🚀 = Boost")
+    print("⚠️ = Trap")
+    print("❓ = Question")
+    print("⬜ = Normal square")
+
+
+
+def roll_dice():
+    
+    '''
+    Function: roll_dice()
+    Purpose: Rolls a six-sided die.
+    Parameters: None
+    Return Value: int (dice result from 1 to 6)
+    Author: Connor
+    '''
+
+    dice_result_int = random.randint(1, 6)
+
+    print("\nYou rolled a", dice_result_int)
+
+    return dice_result_int
+
+
+
+def move_player(current_position_int, movement_amount_int):
+    
+    '''
+    Function: move_player()
+    Purpose: Moves the player and handles board boundaries.
+    Parameters: current_position_int (int), movement_amount_int (int)
+    Return Value: int (new player position)
+    Author: Connor
+    '''
+
+    new_position_int = current_position_int + movement_amount_int
+
+    # Bounce backward if the player passes square 30
+    if new_position_int > 30:
+
+        extra_spaces_int = new_position_int - 30
+
+        new_position_int = 30 - extra_spaces_int
+
+    # Prevent the player from going below square 1
+    if new_position_int < 1:
+        new_position_int = 1
+
+    return new_position_int
+
+
+
+def check_special_square(player_position_int, special_squares):
+    
+    '''
+    Function: check_special_square()
+    Purpose: Checks whether the player landed on a special
+             square.
+    Parameters: player_position_int (int), special_squares (dict[int, str])
+    Return Value: str (special square type or "normal")
+    Author: Connor
+    '''
+
+    if player_position_int in special_squares:
+        return special_squares[player_position_int]
+
+    else:
+        return "normal"
+
+
+
+def ask_question(question_list_list):
+    
+    '''
+    Function: ask_question()
+    Purpose: Asks a random question and checks the answer.
+    Parameters: question_list_list (list[tuple[str, str]])
+    Return Value: int (movement amount)
+    Author: Connor
+    '''
+
+    question_data_tuple = random.choice(question_list_list)
+
+    question_str = question_data_tuple[0]
+    correct_answer_str = question_data_tuple[1]
+
+    print("\nQUESTION:")
+    print(question_str)
+
+    player_answer_str = input("Your answer: ")
+
+    if player_answer_str.lower().strip() == correct_answer_str:
+
+        print("Correct answer!")
+
+        movement_str = input(
+            "Choose to move forward 1, 2, or 3 squares: "
+        )
+
+        while movement_str not in ["1", "2", "3"]:
+            print("Invalid choice.")
+            movement_str = input(
+                "Choose 1, 2, or 3 squares: "
+            )
+
+        return int(movement_str)
+
+    else:
+
+        print("Incorrect answer! Move backward 2 squares.")
+
+        print("Correct answer:", correct_answer_str)
+
+        return -2
+
+
+
+def check_win(player_position_int):
+    
+    '''
+    Function: check_win()
+    Purpose: Checks whether the player reached square 30.
+    Parameters: player_position_int (int)
+    Return Value: bool (True or False)
+    Author: Jaden
+    '''
+    if player_position_int >= 30:
+        return True
+
+    else:
+        return False
+
+
+def display_result(game_result_str, final_score_int):
+    
+    '''
+    Function: display_result()
+    Purpose: Displays the final game result and score.
+    Parameters: game_result_str (str), final_score_int (int)
+    Return Value: None (NoneType)
+    Author: Jaden
+    '''
+    
+    print("\n========== GAME OVER ==========")
+
+    if game_result_str == "win":
+        print("Congratulations! You won Dice Dash!")
+
+    elif game_result_str == "loss":
+        print("You ran out of turns. Better luck next time!")
+
+    elif game_result_str == "quit":
+        print("You chose to quit the game.")
+
+    print("Your final score is:", final_score_int)
+
+    print("================================")
+
+
+
+def play_again():
+    
+    '''
+    Function: play_again()
+    Purpose: Asks the player if they want another game.
+    Parameters: None
+    Return Value: bool (True or False)
+    Author: Connor
+    '''
+
+    choice_str = input("\nWould you like to play again? (y/n): ")
+
+    while choice_str.lower() not in ["y", "n"]:
+        print("Invalid input.")
+        choice_str = input("Enter y or n: ")
+
+    if choice_str.lower() == "y":
+        return True
+
+    else:
+        return False
+
+
+
+# Start the program
+main()
+

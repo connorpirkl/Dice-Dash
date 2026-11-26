@@ -1,0 +1,198 @@
+# Filename: player.py
+# Purpose: Creates the Player class for Dice Dash.
+# Author: Dice Dash Group (Connor, Jaden, Kevin)
+
+import random
+
+
+class Player:
+
+    def __init__(self, name):
+        """
+        Function: __init__()
+        Purpose: Initializes a player.
+        Parameters:
+            name (str): The player's name.
+        Return Value: None
+        """
+
+        self.name = name
+        self.position = 1
+        self.wins = 0
+
+    def __str__(self):
+        """
+        Function: __str__()
+        Purpose: Displays the player's name, position, and wins.
+        Parameters: None
+        Return Value: (str) Player information.
+        """
+
+        return (f"Player: {self.name} | "
+                f"Position: {self.position} | "
+                f"Wins: {self.wins}")
+
+    def move(self, movement_amount_int):
+        """
+        Function: move()
+        Purpose: Moves the player and handles board boundaries.
+        Parameters:
+            movement_amount_int (int): Amount of movement.
+        Return Value: (int) New player position.
+        """
+
+        new_position_int = self.position + movement_amount_int
+
+        # Bounce backward if the player passes square 30
+        if new_position_int > 30:
+
+            extra_spaces_int = new_position_int - 30
+
+            new_position_int = 30 - extra_spaces_int
+
+        # Prevent the player from going below square 1
+        if new_position_int < 1:
+
+            new_position_int = 1
+
+        self.position = new_position_int
+
+        return self.position
+
+    def roll_die(self):
+        """
+        Function: roll_die()
+        Purpose: Rolls a six-sided die.
+        Parameters: None
+        Return Value: (int) Random number from 1 through 6.
+        """
+
+        dice_result_int = random.randint(1, 6)
+
+        print(f"\n{self.name}, you rolled a {dice_result_int}!")
+
+        return dice_result_int
+
+    def answer_question(self, questions_list):
+        """
+        Function: answer_question()
+        Purpose: Asks a random question and checks the answer.
+        Parameters:
+            questions_list (list): Questions and correct answers.
+        Return Value: (int) Movement amount based on the answer.
+        """
+
+        question_data_tuple = random.choice(questions_list)
+
+        question_str = question_data_tuple[0]
+        correct_answer_str = question_data_tuple[1]
+
+        print(f"\n{self.name}, you landed on a question square!")
+        print(question_str)
+
+        player_answer_str = input(f"{self.name}, your answer: ")
+
+        if player_answer_str.lower().strip() == correct_answer_str:
+
+            print(f"{self.name}, correct answer!")
+
+            movement_str = input(
+                f"{self.name}, choose to move forward "
+                "1, 2, or 3 squares: "
+            )
+
+            while movement_str not in ["1", "2", "3"]:
+
+                print(f"{self.name}, invalid choice.")
+
+                movement_str = input(
+                    f"{self.name}, choose 1, 2, or 3 squares: "
+                )
+
+            return int(movement_str)
+
+        else:
+
+            print(f"{self.name}, incorrect answer!")
+            print("Move backward 2 squares.")
+            print("Correct answer:", correct_answer_str)
+
+            return -2
+
+    def take_turn(self, special_squares_dict, questions_list):
+        """
+        Function: take_turn()
+        Purpose: Handles everything the player does during one turn.
+        Parameters:
+            special_squares_dict (dict): Special square positions and types.
+            questions_list (list): Questions and correct answers.
+        Return Value: (int) Player's final position after the turn.
+        """
+
+        # Roll the dice
+        dice_roll_int = self.roll_die()
+
+        # Move the player
+        self.move(dice_roll_int)
+
+        # Check for a special square
+        special_type_str = special_squares_dict.get(
+            self.position, "normal"
+        )
+
+        # Handle boost square
+        if special_type_str == "boost":
+
+            print(
+                f"{self.name}, you landed on a boost! "
+                "Move forward 3."
+            )
+
+            self.move(3)
+
+        # Handle trap square
+        elif special_type_str == "trap":
+
+            print(
+                f"{self.name}, you landed on a trap! "
+                "Move backward 3."
+            )
+
+            self.move(-3)
+
+        # Handle question square
+        elif special_type_str == "question":
+
+            movement_int = self.answer_question(questions_list)
+
+            self.move(movement_int)
+
+        else:
+
+            print(f"{self.name}, you landed on a normal square.")
+
+        return self.position
+
+    def update_stats(self, won_bool):
+        """
+        Function: update_stats()
+        Purpose: Updates the player's win total.
+        Parameters:
+            won_bool (bool): Whether the player won.
+        Return Value: None
+        """
+
+        if won_bool == True:
+
+            self.wins = self.wins + 1
+
+    def reset_position(self):
+        """
+        Function: reset_position()
+        Purpose: Resets the player to square 1.
+        Parameters: None
+        Return Value: None
+        """
+
+        self.position = 1
+
